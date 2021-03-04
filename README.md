@@ -422,10 +422,34 @@ viewer인 dashboard 서비스를 별도로 구현하여 아래와 같이 view를
 # CI/CD 설정
   - git에서 소스 가져오기
   - Build 하기
+  ```
+  각 서비스 폴더에서 아래 명령어로 빌드 수행
+  mvn package
+  ```
   - Dockerlizing, ACR(Azure Container Registry에 Docker Image Push하기
+  ```
+  az acr build --registry skuser15 --image skuser15.azurecr.io/gateway:v2 .
+  az acr build --registry skuser15 --image skuser15.azurecr.io/order:v1 .
+  az acr build --registry skuser15 --image skuser15.azurecr.io/deposit:v2 .
+  az acr build --registry skuser15 --image skuser15.azurecr.io/product:v2 .
+  az acr build --registry skuser15 --image skuser15.azurecr.io/dashboard:v2 .
+  ```
   - ACR에서 이미지 가져와서 Kubernetes에서 Deploy하기
-  - Kubectl Deploy 결과 확인
+  ```
+  kubectl create deploy gateway --image=skuser15.azurecr.io/gateway:v2
+  kubectl create deploy order --image=skuser15.azurecr.io/order:v1
+  kubectl create deploy deposit --image=skuser15.azurecr.io/deposit:v2
+  kubectl create deploy product --image=skuser15.azurecr.io/product:v2
+  kubectl create deploy dashboard --image=skuser15.azurecr.io/dashboard:v2
+  ```
   - Kubernetes에서 서비스 생성하기 (Docker 생성이기에 Port는 8080이며, Gateway는 LoadBalancer로 생성)
+  ```
+  kubectl expose deploy gateway --type="LoadBalancer" --port=8080
+  kubectl expose deploy order --type="ClusterIP" --port=8080
+  kubectl expose deploy deposit --type="ClusterIP" --port=8080
+  kubectl expose deploy product --type="ClusterIP" --port=8080
+  kubectl expose deploy dashboard --type="ClusterIP" --port=8080
+  ```
   - Kubectl Expose 결과 확인
  
 # 오토스케일 아웃
