@@ -421,6 +421,9 @@ viewer인 dashboard 서비스를 별도로 구현하여 아래와 같이 view를
 # 운영
 # CI/CD 설정
   - git에서 소스 가져오기
+  ```
+  git clone 경로
+  ```
   - Build 하기
   ```
   각 서비스 폴더에서 아래 명령어로 빌드 수행
@@ -453,11 +456,109 @@ viewer인 dashboard 서비스를 별도로 구현하여 아래와 같이 view를
   - Kubectl Expose 결과 확인
  
 # 오토스케일 아웃
+주문 요청이 급증할 경우, order 서비스를 자동으로 늘려주도록 한다.
+ - 오토스케일 설정
+ ![autoscale_1](https://user-images.githubusercontent.com/78134049/110019889-4acfbb80-7d6c-11eb-96a4-b8391d685c6e.png)
+ ![autoscale_2](https://user-images.githubusercontent.com/78134049/110019922-5327f680-7d6c-11eb-847d-fd3e07baed09.png)
+ ![autoscale_3](https://user-images.githubusercontent.com/78134049/110019939-56bb7d80-7d6c-11eb-9ca0-eacad0c1e406.png)
+
+ - siege를 활용해서 워크로드를 걸어준다.
+ ```
+ siege -c100 -t120S -v --content-type "application/json" 'http://20.194.2.169:8080/orders POST {"productId": "10", "Qty":"5"}' 
+ ```
+ 
 
 # ConfigMap 적용
+ - order 서비스의 application.yaml에 ConfigMap 적용 대상 항목을 추가한다.
+ ```
+ api:
+  deposit:
+    url: ${DEPOSIT}
+ ```
+ - order 서비스의 deployment.yaml에 ConfigMap 적용 대상 항목을 추가한다.
+ ```
+    spec:
+      containers:
+        - name: order
+          image: username/order:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: DEPOSIT
+              valueFrom:
+                configMapKeyRef:
+                  name: apiurl
+                  key: depositurl
+ ```
+ - order/external 의 depositservice에 아래와 같이 설정한다.
+ ```java
+ @FeignClient(name="deposit", url="api.deposit.url")
+ public interface DepositService {
 
+    @RequestMapping(method= RequestMethod.GET, path="/deposits")
+    public void pay(@RequestBody Deposit deposit);
+
+ }
+ ```
 # 동기식 호출 / 서킷 브레이킹 / 장애격리
+ - 서킷 브레이킹 프레임워크의 선택: Spring FeignClient + Hystrix 옵션을 사용하여 구현함
+ - RestAPI 기반 Request/Response 요청이 과도할 경우 CB 를 통하여 장애격리 하도록 설정함.
+ - Hystrix 를 설정: 요청처리 쓰레드에서 처리시간이 680 밀리가 넘어서기 시작하여 어느정도 유지되면 CB 회로가 닫히도록 설정
+ - order Application.yaml 설정
+ ```yml
+ feign:
+  hystrix:
+    enabled: true
 
+ hystrix:
+  command:
+    default:
+      execution.isolation.thread.timeoutInMilliseconds: 680
+ ``` 
+ - order.java에 지연코드 삽입
+  ```
+  java
+      @PrePersist
+    public void onPrePersist(){
+        /*OrderCanceled orderCanceled = new OrderCanceled();
+        BeanUtils.copyProperties(this, orderCanceled);
+        orderCanceled.publishAfterCommit();
+        */
+        try {
+            Thread.currentThread().sleep((long) (1000 + Math.random() * 220));
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+    }
+ ```
 # 무정지 재배포
+ - 먼저 무정지 재배포가 100% 되는 것인지 확인하기 위해서 Autoscaler 이나 CB 설정을 제거함
+ - siege 로 배포작업 직전에 워크로드를 모니터링 함
+ ```
+ siege -c100 -t120S -v --content-type "application/json" 'http://20.194.2.169:8080/orders POST {"productId": "10", "Qty":"5"}'
+ ```
+ - order 서비스의 deployment.yml 에서 아래와 같이 readiness 설정 제거 후 재배포 (readiness 설정 시 주석 제거)
+ ```
+ kubectl apply -f deployment.yml
+ ```
+ ```yaml
+          # readinessProbe:
+          #   httpGet:
+          #     path: '/actuator/health'
+          #     port: 8080
+          #   initialDelaySeconds: 10
+          #   timeoutSeconds: 2
+          #   periodSeconds: 5
+          #   failureThreshold: 10
+ ```	      
+  - siege의 Availability 가 100% 미만으로 떨어짐
+![readiness_2](https://user-images.githubusercontent.com/78134049/110020041-7357b580-7d6c-11eb-9eeb-4142f3d22b6e.png)
 
 # Self-healing (Liveness Probe)
+ - reserve 서비스의 yml 파일에 liveness probe 설정을 바꾸어서, liveness probe 가 동작함을 확인
+ - liveness probe 옵션을 추가하되, 서비스 포트가 아닌 8090으로 설정, readiness probe 미적용
+ - order 서비스의 deployment.yml 에서 아래와 같이 설정
+![liveness_1](https://user-images.githubusercontent.com/78134049/110020049-75217900-7d6c-11eb-9762-cefce78d508b.png)
+ - liveness 설정 확인
+![liveness_2](https://user-images.githubusercontent.com/78134049/110020055-7652a600-7d6c-11eb-9527-545287824cd1.png)
