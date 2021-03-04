@@ -516,8 +516,7 @@ viewer인 dashboard 서비스를 별도로 구현하여 아래와 같이 view를
       execution.isolation.thread.timeoutInMilliseconds: 680
  ``` 
  - order.java에 지연코드 삽입
-  ```
-  java
+  ```java
       @PrePersist
     public void onPrePersist(){
         /*OrderCanceled orderCanceled = new OrderCanceled();
