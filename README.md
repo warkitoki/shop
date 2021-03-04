@@ -26,11 +26,9 @@ https://workflowy.com/s/assessment/qJn45fBdVZn4atl3
 
 
 # 모형
-
+![모형2](https://user-images.githubusercontent.com/78134049/110017380-7f8e4380-7d69-11eb-9318-fad32e05bb6c.png)
 
 # 기능적/비기능적 요구사항에 대한 검증
-
-
 1. 손님이 주문을 한다. (1)
 2. 결재처리(2)
    - 결재가 완료되면 접수처리하고 제작을 한다. (3 -> 4)
@@ -39,7 +37,7 @@ https://workflowy.com/s/assessment/qJn45fBdVZn4atl3
 4. 모든 주문 및 준비현황은 dashboard에서 볼 수 있다. (7)
 
 # 헥사고날 아키텍쳐 다이어그램 도출 (Polyglot)
-
+![헥사고날](https://user-images.githubusercontent.com/78134049/110017462-93d24080-7d69-11eb-9c3c-f374bb28613d.png)
 
 # 구현
 각각의 서비스 실행 명령어는 아래와 같다. 포트넘버는 8081 ~ 8084, 8088이다.
@@ -195,17 +193,18 @@ public class PolicyHandler{
  ```
  http http://52.231.66.165:8080/orders productId=10 qty=5
  ```
- < 스샷 >
+![주문_1](https://user-images.githubusercontent.com/78134049/110017553-afd5e200-7d69-11eb-9f65-22ba3e08878b.png)
  
  - 주문 현황
  ```
  http http://52.231.66.165:8080/orders/1
  ```
- < 스샷 >
+![주문2](https://user-images.githubusercontent.com/78134049/110017583-b6645980-7d69-11eb-898a-08ba20fb137e.png)
  
  ```
  http http://52.231.66.165:8080/products/1
  ```
+![주문3](https://user-images.githubusercontent.com/78134049/110017630-c419df00-7d69-11eb-8d03-41358adaa207.png)
 
 
 # Gateway 적용
@@ -342,7 +341,8 @@ public interface DepositService {
 ```
  
  - 동기식 호출에서는 호출 시간에 따른 커플링이 발생하여, deposit 시스템에 장애가 나면 주문을 할 수 없다.
-   < 결과 스샷 >
+![동기_장애_1](https://user-images.githubusercontent.com/78134049/110017928-178c2d00-7d6a-11eb-8a25-09a4201c5a77.png)
+![동기_장애_2](https://user-images.githubusercontent.com/78134049/110017955-21ae2b80-7d6a-11eb-9dac-47960e8b236d.png)
 
 # 비동기식 호출 (Pub/Sub 방식)
  - deposit 서비스 내 Deposit.java에서 아래와 같이 서비스 Pub 구현
@@ -409,11 +409,14 @@ public class PolicyHandler{
 
 - 비동기 호출은 다른 서비스 하나가 비정상이어도 해당 메세지를 다른 메시지 큐에서 보관하고 있기에, 서비스가 다시 정상으로 돌아오게 되면 그 메시지를 처리하게 된다.
   -> product 서비스를 내려도 order 주문에는 문제 없이 동작한다.
-   < 스샷 >
+![비동기_장애_1](https://user-images.githubusercontent.com/78134049/110017974-270b7600-7d6a-11eb-837b-a6fb17c00790.png)
+![비동기_장애_2](https://user-images.githubusercontent.com/78134049/110018001-2f63b100-7d6a-11eb-9db9-8ee618c63e41.png)
+
    
 # CQRS
 viewer인 dashboard 서비스를 별도로 구현하여 아래와 같이 view를 출력한다.
-  < 스샷 >
+![주문4_CQRS](https://user-images.githubusercontent.com/78134049/110017695-d6941880-7d69-11eb-9b25-d9259f1e8162.png)
+
   
 # 운영
 # CI/CD 설정
