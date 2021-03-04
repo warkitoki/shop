@@ -552,6 +552,7 @@ viewer인 dashboard 서비스를 별도로 구현하여 아래와 같이 view를
           #   failureThreshold: 10
  ```	      
   - siege의 Availability 가 100% 미만으로 떨어짐
+ 
 ![readiness_2](https://user-images.githubusercontent.com/78134049/110020041-7357b580-7d6c-11eb-9eeb-4142f3d22b6e.png)
 
 # Self-healing (Liveness Probe)
@@ -559,5 +560,6 @@ viewer인 dashboard 서비스를 별도로 구현하여 아래와 같이 view를
  - liveness probe 옵션을 추가하되, 서비스 포트가 아닌 8090으로 설정, readiness probe 미적용
  - order 서비스의 deployment.yml 에서 아래와 같이 설정
 ![liveness_1](https://user-images.githubusercontent.com/78134049/110020049-75217900-7d6c-11eb-9762-cefce78d508b.png)
+ 
  - liveness 설정 확인
 ![liveness_2](https://user-images.githubusercontent.com/78134049/110020055-7652a600-7d6c-11eb-9527-545287824cd1.png)
