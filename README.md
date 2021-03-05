@@ -466,7 +466,8 @@ viewer인 dashboard 서비스를 별도로 구현하여 아래와 같이 view를
  ```
  siege -c100 -t120S -v --content-type "application/json" 'http://20.194.2.169:8080/orders POST {"productId": "10", "Qty":"5"}' 
  ```
- 
+ ![autoscale_5](https://user-images.githubusercontent.com/78134049/110058721-33adbf80-7da6-11eb-81ee-81e2a6dcb4e5.png)
+
 
 # ConfigMap 적용
  - order 서비스의 application.yaml에 ConfigMap 적용 대상 항목을 추가한다.
