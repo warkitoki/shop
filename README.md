@@ -564,3 +564,5 @@ viewer인 dashboard 서비스를 별도로 구현하여 아래와 같이 view를
  
  - liveness 설정 확인
 ![liveness_2](https://user-images.githubusercontent.com/78134049/110020055-7652a600-7d6c-11eb-9527-545287824cd1.png)
+ - restart 확인
+ ![liveness_3](https://user-images.githubusercontent.com/78134049/110059532-bedb8500-7da7-11eb-8530-490429a4b35f.png)
